@@ -33,6 +33,12 @@ private:
     chrono::steady_clock::time_point start_time_;
 };
 
+//BRIEF:
+//The naive branch implementation works but it is not optimised.
+//we can try to rotate the vector and add the data (accumulate the sum in first slot)
+//But the best way to do this is to do log(N/2) roatations (N - poly modulus) and then we have sum in all slots
+//we can do this by unsing vectorization/batching..watch video to understand the algorithm.
+//For rotating the encrypted data, we need galois keys (This is very large)
 
 void bootcamp_demo()
 {
@@ -50,7 +56,8 @@ void bootcamp_demo()
     EncryptionParameters parms(scheme_type::CKKS);
     size_t poly_modulus_degree = 8192;
     parms.set_poly_modulus_degree(poly_modulus_degree);
-    parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 30, 60 }));
+    parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 30, 60 })); //This time result will be big, so use 60
+                                                                                        //so we have 30 bit room for integer output
 
     // Set up the SEALContext
     auto context = SEALContext::Create(parms);
@@ -75,7 +82,7 @@ void bootcamp_demo()
     auto sk = keygen.secret_key();
     auto pk = keygen.public_key();
 
-    GaloisKeys galk;
+    GaloisKeys galk; //without galois keys, we cannot do rotations
     // Create rotation (Galois) keys
     {
         Stopwatch sw("GaloisKeys creation time");
